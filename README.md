@@ -76,6 +76,15 @@ $ cargo run
 ```
    💡
 ```
+...
+
+## Bonus points
+
+This example also demonstrates [Typed Main]. The `run` function takes
+two handle arguments, providing the component with exactly what it
+needs.
+
+[Typed Main]: https://sunfishcode.github.io/typed-main-wasi-presentation/chapter_1.html
 
 [embedded-hal]: https://docs.rs/embedded-hal/latest/embedded_hal/
 [this patch]: https://github.com/bytecodealliance/cargo-component/pull/231
