@@ -1,0 +1,341 @@
+/// Embedded APIs.
+package sketch:embedded@0.0.0;
+
+/// I²C.
+interface i2c {
+    /// An address value, in either 7-bit or 10-bit form, depending on the device.
+    type address = u16;
+
+    /// Operation errors.
+    variant error-code {
+        /// Bus error occurred. e.g. A START or a STOP condition is detected and
+        /// is not located after a multiple of 9 SCL clock pulses.
+        bus,
+
+        /// The arbitration was lost, e.g. electrical problems with the clock signal.
+        arbitration-loss,
+
+        /// A bus operation was not acknowledged, e.g. due to the addressed
+        /// device not being available on the bus or the device not being ready
+        /// to process requests at the moment.
+        no-acknowledge(no-acknowledge-source),
+
+        /// The peripheral receive buffer was overrun.
+        overrun,
+
+        /// A different error occurred.
+        other,
+    }
+
+    /// No-acknowledge error source.
+    ///
+    /// In cases where it is possible, a device should indicate if a no
+    /// acknowledge response was received to an address versus a no acknowledge
+    /// to a data byte. Where it is not possible to differentiate, Unknown
+    /// should be indicated.
+    enum no-acknowledge-source {
+        /// The device did not acknowledge its address. The device may be
+        /// missing.
+        address,
+
+        /// The device did not acknowledge the data. It may not be ready to
+        /// process requests at the moment.
+        data,
+
+        /// Either the device did not acknowledge its address or the data, but
+        /// it is unknown which.
+        unknown,
+    }
+
+    /// An operation used by the `transction` method.
+    variant operation {
+        /// Read the give number of bytes.
+        read(u64),
+
+        /// Write the given bytes.
+        write(list<u8>)
+    }
+
+    resource i2c {
+        /// Execute the provided `operation`s on the I²C bus.
+        transaction: func(
+            address: address,
+            operations: list<operation>
+        ) -> result<list<list<u8>>, error-code>;
+
+        /// Reads `len` bytes from address `address`.
+        read: func(address: address, len: u64) -> result<list<u8>, error-code>;
+
+        /// Writes bytes to address `address`.
+        write: func(address: address, data: list<u8>) -> result<_, error-code>;
+
+        /// Writes bytes to address `address` and then reads `read-len` bytes
+        /// in a single transaction.
+        write-read: func(
+           address: address,
+           write: list<u8>,
+           read-len: u64,
+        ) -> result<_, error-code>;
+    }
+}
+
+/// Digital I/O, for example GPIO pins.
+interface digital {
+    /// Operation errors.
+    enum error-code {
+        /// An error occurred.
+        other,
+    }
+
+    /// Digital output pin state.
+    enum pin-state {
+        low,
+        high,
+    }
+
+    /// Single digital input pin.
+    resource input-pin {
+        /// Is the input pin low?
+        is-low: func() -> result<bool, error-code>;
+
+        /// Is the input pin high?
+        is-high: func() -> result<bool, error-code>;
+    }
+
+    /// Single digital input pin.
+    resource output-pin {
+        /// Drives the pin low.
+        set-low: func() -> result<_, error-code>;
+
+        /// Drives the pin high.
+        set-high: func() -> result<_, error-code>;
+
+        /// Drives the pin high or low depending on the provided value.
+        set-state: func(state: pin-state) -> result<_, error-code>;
+    }
+
+    /// Push-pull output pin that can read its output state.
+    resource stateful-output-pin {
+        /// Is the pin in drive high mode?
+        is-set-high: func() -> result<bool, error-code>;
+
+        /// Is the pin in drive low mode?
+        is-set-low: func() -> result<bool, error-code>;
+
+        /// Toggle pin output.
+        toggle: func() -> result<_, error-code>;
+    }
+}
+
+/// Delays.
+interface delay {
+    /// Delay with up to nanosecond precision.
+    resource delay {
+        /// Pauses execution for at minimum `ns` nanoseconds. Pause can be
+        /// longer if the implementation requires it due to precision/timing
+        /// issues.
+        delay-ns: func(ns: u32);
+    }
+}
+
+/// Pulse Width Modulation (PWM).
+interface pwm {
+    /// Operation errors.
+    enum error-code {
+        /// An error occurred.
+        other,
+    }
+
+    /// Single PWM channel / pin.
+    resource set-duty-cycle {
+        /// Get the maximum duty cycle value.
+        ///
+        /// This value corresponds to a 100% duty cycle.
+        max-duty-cycle: func() -> u16;
+
+        /// Set the duty cycle to `duty / max_duty`.
+        ///
+        /// Traps if the duty cycle value is greater than the maximum duty
+        /// cycle value, as reported by `max-duty-cycle`.
+        set-duty-cycle: func(duty: u16) -> result<_, error-code>;
+
+        /// Set the duty cycle to 0%, or always inactive.
+        set-duty-cycle-fully-off: func() -> result<_, error-code>;
+
+        /// Set the duty cycle to 100%, or always active.
+        set-duty-cycle-fully-on: func() -> result<_, error-code>;
+
+        /// Set the duty cycle to `num / denom`.
+        ///
+        /// Traps if `num` is greater than `denom`, or if `denom` is zero.
+        set-duty-cycle-fraction: func(
+            num: u16,
+            denom: u16
+        ) -> result<_, error-code>;
+
+        /// Set the duty cycle to `percent / 100`.
+        ///
+        /// Traps if `percent` is greater than 100.
+        set-duty-cycle-percent: func(percent: u8) -> result<_, error-code>;
+    }
+}
+
+interface spi {
+    /// SPI mode.
+    record mode {
+        /// Clock polarity.
+        polarity: polarity,
+
+        // Clock phase.
+        phase: phase,
+    }
+
+    /// Clock polarity.
+    enum polarity {
+        /// Clock signal low when idle.
+        idle-low,
+
+        /// Clock signal high when idle.
+        idle-high,
+    }
+
+    /// Clock phase.
+    enum phase {
+        /// Data in “captured” on the first clock transition.
+        capture-on-first-transition,
+
+        /// Data in “captured” on the second clock transition.
+        capture-on-second-transition,
+    }
+
+    /// SPI error kind.
+    enum error-code {
+        /// The peripheral receive buffer was overrun.
+        overrun,
+
+        /// Multiple devices on the SPI bus are trying to drive the chip
+        /// select pin.
+        mode-fault,
+
+        /// Received data does not conform to the peripheral configuration.
+        frame-format,
+
+        /// An error occurred while asserting or deasserting the
+        /// Chip Select pin.
+        chip-select-fault,
+
+        /// A different error occurred.
+        other,
+    }
+
+    /// Word size.
+    ///
+    /// TODO: Support up to `u16` word sizes?
+    type word = u8;
+
+    /// SPI transaction operation.
+    ///
+    /// This allows composition of SPI operations into a single bus transaction.
+    variant operation {
+        /// Read data.
+        read(u64),
+
+        /// Write data from the provided list, discarding read data.
+        write(list<word>),
+
+        /// Read data, while writing data from the buffer.
+        transfer(tuple<u64, list<word>>),
+
+        /// Delay for at least the specified number of nanoseconds.
+        delay-ns(u32),
+    }
+
+    /// Helper for CPOL = 0, CPHA = 0.
+    mode0: func() -> mode;
+
+    /// Helper for CPOL = 0, CPHA = 1.
+    mode1: func() -> mode;
+
+    /// Helper for CPOL = 1, CPHA = 0.
+    mode2: func() -> mode;
+
+    /// Helper for CPOL = 1, CPHA = 1.
+    mode3: func() -> mode;
+
+    /// SPI bus.
+    ///
+    /// `bus` represents exclusive ownership over the whole SPI bus, with SCK,
+    /// MOSI and MISO pins.
+    resource bus {
+        /// Read words.
+        ///
+        /// The word value sent on MOSI during reading is
+        /// implementation-defined, typically 0x00, 0xFF, or configurable.
+        ///
+        /// Implementations are allowed to return before the operation is complete.
+        read: func(len: u64) -> result<list<word>, error-code>;
+
+        /// Write `words`, ignoring all the incoming words.
+        ///
+        /// Implementations are allowed to return before the operation is complete.
+        write: func(words: list<word>) -> result<_, error-code>;
+
+        /// Write and read simultaneously. `write` is written on MOSI and words
+        /// received on MISO are returned.
+        ///
+        /// It is allowed for `read-len` and `write`'s length to be different,
+        /// even zero length. The transfer runs for `max(read-len, write.len())`
+        /// words. If `read-len` is shorter, incoming words after `read-len` has
+        /// been filled will be discarded. If `write` is shorter, the value of
+        /// words sent in MOSI after all `write` has been sent is
+        /// implementation-defined, typically `0x00`, `0xFF`, or configurable.
+        ///
+        /// Implementations are allowed to return before the operation is complete.
+        transfer: func(
+            read-len: u64,
+            write: list<word>
+        ) -> result<list<word>, error-code>;
+
+        /// Wait until all operations have completed and the bus is idle.
+        flush: func() -> result<_, error-code>;
+    }
+
+    /// SPI device trait.
+    ///
+    /// `device` represents ownership over a single SPI device on a (possibly
+    /// shared) bus, selected with a CS (Chip Select) pin.
+    resource device {
+        /// Perform a transaction against the device.
+        ///
+        /// - Locks the bus
+        /// - Asserts the CS (Chip Select) pin.
+        /// - Performs all the operations.
+        /// - Flushes the bus.
+        /// - Deasserts the CS pin.
+        /// - Unlocks the bus.
+        ///
+        /// The locking mechanism is implementation-defined. The only
+        /// requirement is it must prevent two transactions from executing
+        /// concurrently against the same bus. Examples of implementations are:
+        /// critical sections, blocking mutexes, returning an error or
+        /// panicking if the bus is already busy. On bus errors the
+        /// implementation should try to deassert CS. If an error occurs while
+        /// deasserting CS the bus error should take priority as the return
+        /// value.
+        transaction: func(
+            operations: list<operation>
+        ) -> result<list<list<word>>, error-code>;
+
+        /// Do a read within a transaction.
+        read: func(len: u64) -> result<list<word>, error-code>;
+
+        /// Do a write within a transaction.
+        write: func(buf: list<word>) -> result<_, error-code>;
+
+        /// Do a transfer within a transaction.
+        transfer: func(
+            read-len: u64,
+            write: list<word>
+        ) -> result<list<word>, error-code>;
+    }
+}

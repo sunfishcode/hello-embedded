@@ -1,0 +1,24 @@
+package sketch:embedded@0.0.0;
+
+/// An interface to run our "blink" program.
+///
+/// The `run` function takes the expected hardware resources as parameters.
+interface run {
+    use digital.{output-pin};
+    use delay.{delay};
+
+    /// Start the program, with an output pin and a delay mechanism.
+    run: func(led: output-pin, delay: delay);
+}
+
+/// A world to blink in. We import all the embedded APIs, and export the
+/// run interface we declared above.
+world blink {
+    import delay;
+    import digital;
+    import i2c;
+    import pwm;
+    import spi;
+
+    export run;
+}

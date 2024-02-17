@@ -1,0 +1,21 @@
+[package]
+name = "hello-embedded"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+dlmalloc = { version = "0.2.5", features = ["global"] }
+wit-bindgen = { version = "0.18.0", default-features = false, features = ["realloc"] }
+compiler_builtins = { version = "0.1.108", features = ["mem"] }
+
+[package.metadata.component]
+
+[package.metadata.component.dependencies]
+
+[package.metadata.component.bindings]
+# Enable this to put `std` usage behind a feature, so that we can use `no_std`.
+std_feature = true
