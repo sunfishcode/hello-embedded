@@ -3,8 +3,9 @@
 
 // Import the types from the bindings that we use.
 use crate::bindings::exports::sketch::embedded::run::Guest;
-use crate::bindings::sketch::embedded::digital::OutputPin;
 use crate::bindings::sketch::embedded::delay::Delay;
+use crate::bindings::sketch::embedded::digital::OutputPin;
+use lol_alloc::{AssumeSingleThreaded, FreeListAllocator};
 
 mod bindings;
 
@@ -23,10 +24,11 @@ impl Guest for Component {
     }
 }
 
-/// Define a global allocator, since we're using `no_std`. dlmalloc isn't
-/// the smallest allocator possible, but it works for now.
+/// Define a global allocator, since we're using `no_std`.
+/// SAFETY: We're single-threaded.
 #[global_allocator]
-static GLOBAL_ALLOCATOR: dlmalloc::GlobalDlmalloc = dlmalloc::GlobalDlmalloc;
+static GLOBAL_ALLOCATOR: AssumeSingleThreaded<FreeListAllocator> =
+    unsafe { AssumeSingleThreaded::new(FreeListAllocator::new()) };
 
 /// Define a panic handler, since we're using `no_std`. Just infloop for
 /// now and hope we don't panic.

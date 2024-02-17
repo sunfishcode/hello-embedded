@@ -8,7 +8,7 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-dlmalloc = { version = "0.2.5", features = ["global"] }
+lol_alloc = "0.4.0"
 wit-bindgen = { version = "0.18.0", default-features = false, features = ["realloc"] }
 compiler_builtins = { version = "0.1.108", features = ["mem"] }
 
