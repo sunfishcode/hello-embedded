@@ -1,0 +1,9 @@
+[package]
+name = "embedded-host"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+anyhow = "1.0.79"
+wasmtime = { version = "17.0.1", features = ["component-model"] }

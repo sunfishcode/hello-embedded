@@ -1,4 +1,8 @@
 /// Embedded APIs.
+///
+/// These APIs are based on [embedded-hal].
+///
+/// [embedded-hal]: https://crates.io/crates/embedded-hal
 package sketch:embedded@0.0.0;
 
 /// I²C.
@@ -47,7 +51,7 @@ interface i2c {
         unknown,
     }
 
-    /// An operation used by the `transction` method.
+    /// An operation used by the `transaction` method.
     variant operation {
         /// Read the give number of bytes.
         read(u64),

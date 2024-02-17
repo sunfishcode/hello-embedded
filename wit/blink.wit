@@ -11,14 +11,11 @@ interface run {
     run: func(led: output-pin, delay: delay);
 }
 
-/// A world to blink in. We import all the embedded APIs, and export the
-/// run interface we declared above.
+/// A world to blink in. We import the embedded APIs we need for blinking,
+/// and export the run interface we declared above to run.
 world blink {
     import delay;
     import digital;
-    import i2c;
-    import pwm;
-    import spi;
 
     export run;
 }

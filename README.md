@@ -1,23 +1,32 @@
 # Hello Embedded! 👋
 
 This repository contains a sketch of an embedded API described in Wit,
-and a simple example application that builds with it that blinks an LED.
+and a simple example Wasm application that builds with it that blinks
+an LED, and a Wasmtime-based simulator that can run it.
 
-The API is in the wit directory, and is based off of the
-[embedded-hal] API.
+## The Wits
 
-Building the example application currently requires a cargo component with
-[this patch] applied. Build with `cargo component build`.
+The API is described in Wit interfaces in the wit directory, and is based off
+of the [embedded-hal] API.
+
+## The guest
+
+The example application is in the guest directory. Building it currently
+requires a cargo component with [this patch] applied. Build with
+`cargo component build`.
 
 ```sh
+$ cd guest
 $ cargo component build
+[...]
+$ cd ..
 ```
 
-That produces a component in `target/wasm32-wasi/debug/hello_embedded.wasm`.
+That produces a component in `guest/target/wasm32-wasi/debug/hello_embedded.wasm`.
 We can examine it with `wasm-tools`:
 
 ```sh
-$ wasm-tools component wit target/wasm32-wasi/debug/hello_embedded.wasm
+$ wasm-tools component wit guest/target/wasm32-wasi/debug/hello_embedded.wasm
 package root:component;
 
 world root {
@@ -32,8 +41,41 @@ Here we can see it's exporting the `run` interface, which has the `run`
 entrypoint function, and importing the `digital` and `delay` and interfaces,
 which it uses to set the led and control its speed, respectively.
 
-There aren't currently any host implementations, so the application can't
-currently be run anywhere yet. This is an early sketch.
+## The host
+
+Once the guest is built, the host can be run:
+```sh
+$ cargo run
+[...]
+```
+
+```
+   💡
+```
+```
+    
+```
+```
+   💡
+```
+```
+    
+```
+```
+   💡
+```
+```
+    
+```
+```
+   💡
+```
+```
+    
+```
+```
+   💡
+```
 
 [embedded-hal]: https://docs.rs/embedded-hal/latest/embedded_hal/
 [this patch]: https://github.com/bytecodealliance/cargo-component/pull/231
