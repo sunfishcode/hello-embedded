@@ -45,6 +45,7 @@ which it uses to set the led and control its speed, respectively.
 
 Once the guest is built, the host can be run:
 ```sh
+$ cd host
 $ cargo run
 [...]
 ```
