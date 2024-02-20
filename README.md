@@ -17,16 +17,16 @@ requires a cargo component with [this patch] applied. Build with
 
 ```sh
 $ cd guest
-$ cargo component build
+$ cargo component build --release
 [...]
 $ cd ..
 ```
 
-That produces a component in `guest/target/wasm32-wasi/debug/hello_embedded.wasm`.
+That produces a component in `guest/target/wasm32-wasi/release/hello_embedded.wasm`.
 We can examine it with `wasm-tools`:
 
 ```sh
-$ wasm-tools component wit guest/target/wasm32-wasi/debug/hello_embedded.wasm
+$ wasm-tools component wit guest/target/wasm32-wasi/release/hello_embedded.wasm
 package root:component;
 
 world root {
@@ -50,18 +50,6 @@ $ cargo run
 [...]
 ```
 
-```
-   💡
-```
-```
-    
-```
-```
-   💡
-```
-```
-    
-```
 ```
    💡
 ```
