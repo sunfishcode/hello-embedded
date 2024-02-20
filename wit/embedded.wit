@@ -190,25 +190,6 @@ interface pwm {
         /// Traps if the duty cycle value is greater than the maximum duty
         /// cycle value, as reported by `max-duty-cycle`.
         set-duty-cycle: func(duty: u16) -> result<_, error-code>;
-
-        /// Set the duty cycle to 0%, or always inactive.
-        set-duty-cycle-fully-off: func() -> result<_, error-code>;
-
-        /// Set the duty cycle to 100%, or always active.
-        set-duty-cycle-fully-on: func() -> result<_, error-code>;
-
-        /// Set the duty cycle to `num / denom`.
-        ///
-        /// Traps if `num` is greater than `denom`, or if `denom` is zero.
-        set-duty-cycle-fraction: func(
-            num: u16,
-            denom: u16
-        ) -> result<_, error-code>;
-
-        /// Set the duty cycle to `percent / 100`.
-        ///
-        /// Traps if `percent` is greater than 100.
-        set-duty-cycle-percent: func(percent: u8) -> result<_, error-code>;
     }
 }
 
