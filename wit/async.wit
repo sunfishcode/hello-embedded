@@ -15,7 +15,7 @@ interface async-i2c {
         /// Reads `len` bytes from address `address`.
         read: func(address: address, len: u64) -> read-result;
 
-        /// Writes bytes to sub with address `address`.
+        /// Writes bytes to target with address `address`.
         write: func(address: address, data: list<u8>) -> write-result;
 
         /// Writes bytes to address `address` and then reads `read-len` bytes
@@ -128,7 +128,11 @@ interface async-delay {
     }
 }
 
-/// Async interfaces for Serial Peripheral Interface (SPI) main mode.
+/// Async interfaces for Serial Peripheral Interface (SPI) controller mode.
+///
+/// This specifiation follows [OSHWA's recommended terminology].
+///
+/// [OSHWA's recommended terminology]: https://www.oshwa.org/a-resolution-to-redefine-spi-signal-names/
 interface async-spi {
     use wasi:io/poll@0.2.0.{pollable};
     use spi.{error-code, mode, polarity, phase, word, operation};
@@ -136,30 +140,30 @@ interface async-spi {
     /// SPI bus.
     ///
     /// `bus` represents exclusive ownership over the whole SPI bus, with
-    /// serial clock (SCK), main out sub in (MOSI), and main in sub out (MISO)
-    /// pins.
+    /// serial clock (SCK), peripheral in/controller out (PICO), and
+    /// peripheral out/controller in (POCI) pins.
     resource bus {
-        /// Read words from the sub.
+        /// Read words from the peripheral.
         ///
-        /// The word value sent on MOSI during reading is
+        /// The word value sent on PICO during reading is
         /// implementation-defined, typically 0x00, 0xFF, or configurable.
         ///
         /// Implementations are allowed to return before the operation is complete.
         read: func(len: u64) -> bus-read-result;
 
-        /// Write `words` to the sub, ignoring all the incoming words.
+        /// Write `words` to the peripheral, ignoring all the incoming words.
         ///
         /// Implementations are allowed to return before the operation is complete.
         write: func(words: list<word>) -> bus-write-result;
 
-        /// Write and read simultaneously. `write` is written to the sub on
-        /// MOSI and words received on MISO are returned.
+        /// Write and read simultaneously. `write` is written to the peripheral
+        /// on PICO and words received on POCI are returned.
         ///
         /// It is allowed for `read-len` and `write`'s length to be different,
         /// even zero length. The transfer runs for `max(read-len, write.len())`
         /// words. If `read-len` is shorter, incoming words after `read-len` has
         /// been filled will be discarded. If `write` is shorter, the value of
-        /// words sent in MOSI after all `write` has been sent is
+        /// words sent in PICO after all `write` has been sent is
         /// implementation-defined, typically `0x00`, `0xFF`, or configurable.
         ///
         /// Implementations are allowed to return before the operation is complete.
