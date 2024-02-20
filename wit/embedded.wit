@@ -2,10 +2,14 @@
 ///
 /// These APIs are based on [embedded-hal].
 ///
+/// TODO?
+///  - embedded-hal-bus: Sharing SPI and I2C buses
+///  - embedded-can: Controller Area Network (CAN)
+///
 /// [embedded-hal]: https://crates.io/crates/embedded-hal
 package sketch:embedded@0.0.0;
 
-/// I²C.
+/// Inter-Integrated Circuit (I²C).
 interface i2c {
     /// An address value, in either 7-bit or 10-bit form, depending on the device.
     type address = u16;
@@ -70,7 +74,7 @@ interface i2c {
         /// Reads `len` bytes from address `address`.
         read: func(address: address, len: u64) -> result<list<u8>, error-code>;
 
-        /// Writes bytes to address `address`.
+        /// Writes bytes to sub with address `address`.
         write: func(address: address, data: list<u8>) -> result<_, error-code>;
 
         /// Writes bytes to address `address` and then reads `read-len` bytes
@@ -208,6 +212,7 @@ interface pwm {
     }
 }
 
+/// Serial Peripheral Interface (SPI) main mode.
 interface spi {
     /// SPI mode.
     record mode {
@@ -292,10 +297,11 @@ interface spi {
 
     /// SPI bus.
     ///
-    /// `bus` represents exclusive ownership over the whole SPI bus, with SCK,
-    /// MOSI and MISO pins.
+    /// `bus` represents exclusive ownership over the whole SPI bus, with
+    /// serial clock (SCK), main out sub in (MOSI), and main in sub out (MISO)
+    /// pins.
     resource bus {
-        /// Read words.
+        /// Read words from the sub.
         ///
         /// The word value sent on MOSI during reading is
         /// implementation-defined, typically 0x00, 0xFF, or configurable.
@@ -303,13 +309,13 @@ interface spi {
         /// Implementations are allowed to return before the operation is complete.
         read: func(len: u64) -> result<list<word>, error-code>;
 
-        /// Write `words`, ignoring all the incoming words.
+        /// Write `words` to the sub, ignoring all the incoming words.
         ///
         /// Implementations are allowed to return before the operation is complete.
         write: func(words: list<word>) -> result<_, error-code>;
 
-        /// Write and read simultaneously. `write` is written on MOSI and words
-        /// received on MISO are returned.
+        /// Write and read simultaneously. `write` is written to the sub on
+        /// MOSI and words received on MISO are returned.
         ///
         /// It is allowed for `read-len` and `write`'s length to be different,
         /// even zero length. The transfer runs for `max(read-len, write.len())`
@@ -328,7 +334,7 @@ interface spi {
         flush: func() -> result<_, error-code>;
     }
 
-    /// SPI device trait.
+    /// SPI device.
     ///
     /// `device` represents ownership over a single SPI device on a (possibly
     /// shared) bus, selected with a CS (Chip Select) pin.
