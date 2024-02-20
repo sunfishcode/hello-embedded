@@ -40,6 +40,36 @@ impl digital::HostInputPin for HostComponent {
     ) -> wasmtime::Result<Result<bool, digital::ErrorCode>> {
         todo!()
     }
+    fn wait_for_high(
+        &mut self,
+        _self_: wasmtime::component::Resource<digital::InputPin>,
+    ) -> wasmtime::Result<Result<(), digital::ErrorCode>> {
+        todo!()
+    }
+    fn wait_for_low(
+        &mut self,
+        _self_: wasmtime::component::Resource<digital::InputPin>,
+    ) -> wasmtime::Result<Result<(), digital::ErrorCode>> {
+        todo!()
+    }
+    fn wait_for_rising_edge(
+        &mut self,
+        _self_: wasmtime::component::Resource<digital::InputPin>,
+    ) -> wasmtime::Result<Result<(), digital::ErrorCode>> {
+        todo!()
+    }
+    fn wait_for_falling_edge(
+        &mut self,
+        _self_: wasmtime::component::Resource<digital::InputPin>,
+    ) -> wasmtime::Result<Result<(), digital::ErrorCode>> {
+        todo!()
+    }
+    fn wait_for_any_edge(
+        &mut self,
+        _self_: wasmtime::component::Resource<digital::InputPin>,
+    ) -> wasmtime::Result<Result<(), digital::ErrorCode>> {
+        todo!()
+    }
 
     fn drop(
         &mut self,

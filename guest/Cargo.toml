@@ -13,11 +13,16 @@ wit-bindgen = { version = "0.18.0", default-features = false, features = ["reall
 compiler_builtins = { version = "0.1.108", features = ["mem"] }
 
 [package.metadata.component]
+# We don't need an adapter, but cargo-component doesn't yet have an option to
+# disable the adapter. As a workaround, use an empty adapter.
+adapter = "empty.wasm"
 
 [package.metadata.component.target]
 path = "../wit"
 
-[package.metadata.component.dependencies]
+[package.metadata.component.target.dependencies]
+# The async interfaces depend on wasi-io.
+"wasi:io" = { path = "../wit/deps/io" }
 
 [package.metadata.component.bindings]
 # Enable this to put `std` usage behind a feature, so that we can use `no_std`.

@@ -1,0 +1,309 @@
+package sketch:embedded@0.0.0;
+
+/// Async interfaces for Inter-Integrated Circuit (I²C).
+interface async-i2c {
+    use wasi:io/poll@0.2.0.{pollable};
+    use i2c.{address, error-code, no-acknowledge-source, operation};
+
+    resource async-i2c {
+        /// Execute the provided `operation`s on the I²C bus.
+        transaction: func(
+            address: address,
+            operations: list<operation>
+        ) -> transaction-result;
+
+        /// Reads `len` bytes from address `address`.
+        read: func(address: address, len: u64) -> read-result;
+
+        /// Writes bytes to sub with address `address`.
+        write: func(address: address, data: list<u8>) -> write-result;
+
+        /// Writes bytes to address `address` and then reads `read-len` bytes
+        /// in a single transaction.
+        write-read: func(
+           address: address,
+           write: list<u8>,
+           read-len: u64,
+        ) -> read-result;
+    }
+
+    resource transaction-result {
+        /// Read the result of the transaction, if it is complete.
+        ///
+        /// Return none if the transaction is still in progress, or some with
+        /// the result of the transaction if it's complete.
+        transaction: func() -> option<result<list<list<u8>>, error-code>>;
+
+        /// Create a `pollable` which will resolve once the transaction is
+        /// complete.
+        subscribe: func() -> pollable;
+    }
+
+    resource read-result {
+        /// Read the result of the read, if it is complete.
+        ///
+        /// Return none if the read is still in progress, or some with
+        /// the result of the read if it's complete.
+        read: func() -> option<result<list<u8>, error-code>>;
+
+        /// Create a `pollable` which will resolve once the read is
+        /// complete.
+        subscribe: func() -> pollable;
+    }
+
+    resource write-result {
+        /// Read the result of the write, if it is complete.
+        ///
+        /// Return none if the write is still in progress, or some with
+        /// the result of the write if it's complete.
+        write: func() -> option<result<_, error-code>>;
+
+        /// Create a `pollable` which will resolve once the write is
+        /// complete.
+        subscribe: func() -> pollable;
+    }
+}
+
+/// Async interfaces for Digital I/O, for example GPIO pins.
+interface async-digital {
+    use wasi:io/poll@0.2.0.{pollable};
+    use digital.{error-code, pin-state};
+
+    /// Single digital input pin.
+    resource async-input-pin {
+        /// Is the input pin low?
+        is-low: func() -> result<bool, error-code>;
+
+        /// Is the input pin high?
+        is-high: func() -> result<bool, error-code>;
+
+        /// Wait until the pin is high. If it is already high, resolve
+        /// immediately.
+        wait-for-high: func() -> pin-result;
+
+        /// Wait until the pin is low. If it is already low, resolve
+        /// immediately.
+        wait-for-low: func() -> pin-result;
+
+        /// Wait for the pin to undergo a transition from low to high.
+        ///
+        /// If the pin is already high, this does *not* resolve immediately,
+        /// it’ll wait for the pin to go low and then high again.
+        wait-for-rising-edge: func() -> pin-result;
+
+        /// Wait for the pin to undergo a transition from high to low.
+        ///
+        /// If the pin is already low, this does *not* return immediately,
+        /// it’ll wait for the pin to go high and then low again.
+        wait-for-falling-edge: func() -> pin-result;
+
+        /// Wait for the pin to undergo any transition, i.e low to high OR high
+        /// to low.
+        wait-for-any-edge: func() -> pin-result;
+    }
+
+    resource pin-result {
+        /// Report the result of waiting, if the condition is realized.
+        ///
+        /// Return none if the condition hasn't happened yet, or some with
+        /// the result indicating success or failure.
+        complete: func() -> option<result<_, error-code>>;
+
+        /// Create a `pollable` which will resolve once the desired condition
+        /// is realized.
+        subscribe: func() -> pollable;
+    }
+}
+
+/// Async interfaces for delays.
+interface async-delay {
+    use wasi:io/poll@0.2.0.{pollable};
+
+    /// Delay with up to nanosecond precision.
+    resource delay {
+        /// Returns a pollable that resultls after minimum `ns` nanoseconds.
+        /// The delay can be longer if the implementation requires it due to
+        /// precision/timing issues.
+        subscribe-to-delay-ns: func(ns: u32) -> pollable;
+    }
+}
+
+/// Async interfaces for Serial Peripheral Interface (SPI) main mode.
+interface async-spi {
+    use wasi:io/poll@0.2.0.{pollable};
+    use spi.{error-code, mode, polarity, phase, word, operation};
+
+    /// SPI bus.
+    ///
+    /// `bus` represents exclusive ownership over the whole SPI bus, with
+    /// serial clock (SCK), main out sub in (MOSI), and main in sub out (MISO)
+    /// pins.
+    resource bus {
+        /// Read words from the sub.
+        ///
+        /// The word value sent on MOSI during reading is
+        /// implementation-defined, typically 0x00, 0xFF, or configurable.
+        ///
+        /// Implementations are allowed to return before the operation is complete.
+        read: func(len: u64) -> bus-read-result;
+
+        /// Write `words` to the sub, ignoring all the incoming words.
+        ///
+        /// Implementations are allowed to return before the operation is complete.
+        write: func(words: list<word>) -> bus-write-result;
+
+        /// Write and read simultaneously. `write` is written to the sub on
+        /// MOSI and words received on MISO are returned.
+        ///
+        /// It is allowed for `read-len` and `write`'s length to be different,
+        /// even zero length. The transfer runs for `max(read-len, write.len())`
+        /// words. If `read-len` is shorter, incoming words after `read-len` has
+        /// been filled will be discarded. If `write` is shorter, the value of
+        /// words sent in MOSI after all `write` has been sent is
+        /// implementation-defined, typically `0x00`, `0xFF`, or configurable.
+        ///
+        /// Implementations are allowed to return before the operation is complete.
+        transfer: func(
+            read-len: u64,
+            write: list<word>
+        ) -> bus-transfer-result;
+
+        /// Wait until all operations have completed and the bus is idle.
+        flush: func() -> bus-flush-result;
+    }
+
+    resource bus-read-result {
+        /// Read the result of the read, if it is complete.
+        ///
+        /// Return none if the read is still in progress, or some with
+        /// the result of the read if it's complete.
+        read: func() -> result<list<word>, error-code>;
+
+        /// Create a `pollable` which will resolve once the read is
+        /// complete.
+        subscribe: func() -> pollable;
+    }
+
+    resource bus-write-result {
+        /// Read the result of the write, if it is complete.
+        ///
+        /// Return none if the write is still in progress, or some with
+        /// the result of the write if it's complete.
+        write: func() -> result<_, error-code>;
+
+        /// Create a `pollable` which will resolve once the write is
+        /// complete.
+        subscribe: func() -> pollable;
+    }
+
+    resource bus-transfer-result {
+        /// Read the result of the transfer, if it is complete.
+        ///
+        /// Return none if the transfer is still in progress, or some with
+        /// the result of the transfer if it's complete.
+        transfer: func() -> result<list<word>, error-code>;
+
+        /// Create a `pollable` which will resolve once the transfer is
+        /// complete.
+        subscribe: func() -> pollable;
+    }
+
+    resource bus-flush-result {
+        /// Read the result of the flush, if it is complete.
+        ///
+        /// Return none if the flush is still in progress, or some with
+        /// the result of the flush if it's complete.
+        flush: func() -> result<_, error-code>;
+
+        /// Create a `pollable` which will resolve once the flush is
+        /// complete.
+        subscribe: func() -> pollable;
+    }
+
+    /// SPI device.
+    ///
+    /// `device` represents ownership over a single SPI device on a (possibly
+    /// shared) bus, selected with a CS (Chip Select) pin.
+    resource device {
+        /// Perform a transaction against the device.
+        ///
+        /// - Locks the bus
+        /// - Asserts the CS (Chip Select) pin.
+        /// - Performs all the operations.
+        /// - Flushes the bus.
+        /// - Deasserts the CS pin.
+        /// - Unlocks the bus.
+        ///
+        /// The locking mechanism is implementation-defined. The only
+        /// requirement is it must prevent two transactions from executing
+        /// concurrently against the same bus. Examples of implementations are:
+        /// critical sections, blocking mutexes, returning an error or
+        /// panicking if the bus is already busy. On bus errors the
+        /// implementation should try to deassert CS. If an error occurs while
+        /// deasserting CS the bus error should take priority as the return
+        /// value.
+        transaction: func(
+            operations: list<operation>
+        ) -> device-transaction-result;
+
+        /// Do a read within a transaction.
+        read: func(len: u64) -> device-read-result;
+
+        /// Do a write within a transaction.
+        write: func(buf: list<word>) -> device-write-result;
+
+        /// Do a transfer within a transaction.
+        transfer: func(
+            read-len: u64,
+            write: list<word>
+        ) -> device-transfer-result;
+    }
+
+    resource device-transaction-result {
+        /// Read the result of the transaction, if it is complete.
+        ///
+        /// Return none if the transaction is still in progress, or some with
+        /// the result of the transaction if it's complete.
+        transaction: func() -> result<list<list<word>>, error-code>;
+
+        /// Create a `pollable` which will resolve once the transaction is
+        /// complete.
+        subscribe: func() -> pollable;
+    }
+
+    resource device-read-result {
+        /// Read the result of the read, if it is complete.
+        ///
+        /// Return none if the read is still in progress, or some with
+        /// the result of the read if it's complete.
+        read: func() -> result<list<word>, error-code>;
+
+        /// Create a `pollable` which will resolve once the read is
+        /// complete.
+        subscribe: func() -> pollable;
+    }
+
+    resource device-write-result {
+        /// Read the result of the write, if it is complete.
+        ///
+        /// Return none if the write is still in progress, or some with
+        /// the result of the write if it's complete.
+        write: func() -> result<_, error-code>;
+
+        /// Create a `pollable` which will resolve once the write is
+        /// complete.
+        subscribe: func() -> pollable;
+    }
+
+    resource device-transfer-result {
+        /// Read the result of the transfer, if it is complete.
+        ///
+        /// Return none if the transfer is still in progress, or some with
+        /// the result of the transfer if it's complete.
+        transfer: func() -> result<list<word>, error-code>;
+
+        /// Create a `pollable` which will resolve once the transfer is
+        /// complete.
+        subscribe: func() -> pollable;
+    }
+}
