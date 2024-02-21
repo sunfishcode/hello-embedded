@@ -43,9 +43,9 @@ Here we can see it's exporting the `run` interface, which has the `run`
 entrypoint function, and importing the `digital` and `delay` and interfaces,
 which it uses to set the led and control its speed, respectively.
 
-## The host
+## The host simulator
 
-Once the guest is built, the host can be run:
+Once the guest is built, it can be run in the host simulator:
 ```sh
 $ cd host
 $ cargo run
@@ -68,6 +68,20 @@ $ cargo run
    💡
 ```
 ...
+
+## The Linux host
+
+⚠ The following is *entirely untested* at this time!!! ⚠
+
+If you can run this on a Linux board with a GPIO pin 0 wired up to
+an LED, and if luck smiles on us, this should run the guest which
+should make that LED blink:
+
+```sh
+$ cd linux-host
+$ cargo run
+[...]
+```
 
 ## Bonus points
 
