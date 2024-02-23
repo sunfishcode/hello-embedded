@@ -27,3 +27,7 @@ path = "../wit"
 [package.metadata.component.bindings]
 # Enable this to put `std` usage behind a feature, so that we can use `no_std`.
 std_feature = true
+
+[profile.release]
+# Strip out debug info to produce a small component.
+strip = true
