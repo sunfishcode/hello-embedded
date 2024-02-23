@@ -2,7 +2,9 @@
 
 This repository contains a sketch of an embedded API described in [Wit],
 and a simple example Wasm application that builds with it that blinks
-an LED, and a Wasmtime-based simulator that can run it.
+an LED, and a Wasmtime-based simulator that can run it. This is a super
+early demo, and hasn't been optimized at all for code size yet. Its
+purpose right now is to start some discussions.
 
 [Wit]: https://github.com/WebAssembly/component-model/blob/main/design/mvp/WIT.md
 
