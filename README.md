@@ -14,8 +14,9 @@ of the [embedded-hal] API.
 ## The guest
 
 The example application is in the guest directory. Building it currently
-requires a cargo component with [this patch] applied. Build with
-`cargo component build`.
+requires [cargo component 0.8]. Build with `cargo component build`.
+
+[cargo component 0.8]: https://github.com/bytecodealliance/cargo-component/releases/tag/v0.8.0
 
 ```sh
 $ cd guest
@@ -92,4 +93,3 @@ needs.
 [Typed Main]: https://sunfishcode.github.io/typed-main-wasi-presentation/chapter_1.html
 
 [embedded-hal]: https://docs.rs/embedded-hal/latest/embedded_hal/
-[this patch]: https://github.com/bytecodealliance/cargo-component/pull/231
