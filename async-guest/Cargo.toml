@@ -11,6 +11,9 @@ crate-type = ["cdylib"]
 lol_alloc = "0.4.1"
 wit-bindgen = { version = "0.18.0", default-features = false, features = ["realloc"] }
 compiler_builtins = { version = "0.1.108", features = ["mem"] }
+wasi-async-runtime = { path = "/home/dev/wasm-http-tools/crates/wasi-async-runtime", default-features = false }
+wasi = { version = "0.12.1", default-features = false }
+futures-util = { version = "0.3.30", default-features = false, features = ["async-await-macro"] }
 
 [package.metadata.component]
 # We don't need an adapter, but cargo-component doesn't yet have an option to
@@ -19,7 +22,7 @@ adapter = "empty.wasm"
 
 [package.metadata.component.target]
 path = "../wit"
-world = "blink"
+world = "async-blink"
 
 [package.metadata.component.target.dependencies]
 # The async interfaces depend on wasi-io.
