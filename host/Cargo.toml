@@ -6,4 +6,4 @@ publish = false
 
 [dependencies]
 anyhow = "1.0.79"
-wasmtime = { version = "17.0.1", features = ["component-model"] }
+wasmtime = { version = "18.0.1", features = ["component-model"] }

@@ -9,4 +9,4 @@ anyhow = "1.0.79"
 embedded-hal = "1.0.0"
 gpio-cdev = "0.6.0"
 linux-embedded-hal = "0.4.0"
-wasmtime = { version = "17.0.1", features = ["component-model"] }
+wasmtime = { version = "18.0.1", features = ["component-model"] }

@@ -19,3 +19,23 @@ world blink {
 
     export run;
 }
+
+/// An interface to run our "blink" program.
+///
+/// The `run` function takes the expected hardware resources as parameters.
+interface async-run {
+    use digital.{output-pin};
+    use async-delay.{delay};
+
+    /// Start the program, with an output pin and a delay mechanism.
+    run: func(led0: output-pin, led1: output-pin, delay: delay);
+}
+
+/// A world to blink in. We import the embedded APIs we need for blinking,
+/// and export the run interface we declared above to run.
+world async-blink {
+    import async-delay;
+    import digital;
+
+    export async-run;
+}
