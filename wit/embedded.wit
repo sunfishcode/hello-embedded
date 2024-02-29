@@ -189,6 +189,10 @@ interface pwm {
         ///
         /// Traps if the duty cycle value is greater than the maximum duty
         /// cycle value, as reported by `max-duty-cycle`.
+        ///
+        /// Passing the value 0 turns the duty cycle to always inactive.
+        /// Passing the value returned by `max-duty-cycle` sets the duty cycle
+        /// to always acctive.
         set-duty-cycle: func(duty: u16) -> result<_, error-code>;
     }
 }
